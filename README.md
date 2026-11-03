@@ -90,9 +90,14 @@ Tasks originally assigned to members should not be confused with independent com
 - [x] HTML biodata form
 - [x] CSS styling and responsive layout
 - [x] Frontend validation
-- [x] Backend API and SQLite database implementation on the feature branch
-- [ ] Run the server locally and verify that the database saves test records
-- [ ] Review/merge the storage feature Pull Request
-- [ ] Submit the final repository link
+- [x] Backend API and SQLite database merged into `main` (PR #17)
+- [x] Local backend tests: 4 passed / 0 failed
+- [x] Server started and local SQLite query returned saved test records
+- [x] Repository renamed correctly for SEN 305
+- [ ] Review the graphical database table with DB Browser for SQLite
+- [ ] Confirm final group submission requirements and submit the repository link
 
-> The GitHub repository URL may still use the old course code `sen307` until the repository owner renames it in GitHub Settings.
+### Visual database inspection
+To inspect the SQLite table, use the free [DB Browser for SQLite](https://sqlitebrowser.org/dl/) desktop application. Open a local copy of `data/students.sqlite`, select **Browse Data**, then choose the `student_biodata` table.
+
+**Note:** Each clone creates its own local `data/students.sqlite` after its first submission. Student records are intentionally excluded from Git. Use fictional records in classroom demonstrations.
