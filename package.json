@@ -1,0 +1,16 @@
+{
+  "name": "sen305-student-biodata-form",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SEN 305 Group 8 student biodata form with SQLite storage",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
+  }
+}
