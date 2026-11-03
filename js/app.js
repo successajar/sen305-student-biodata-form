@@ -1,4 +1,4 @@
-/** Connect validators to the form (frontend-only: no data is sent or saved). */
+/** Validate the form, then send approved data to the local SEN 305 backend. */
 const form = document.getElementById('biodata-form');
 const submitButton = document.getElementById('submit-button');
 const formStatus = document.getElementById('form-status');
@@ -41,8 +41,8 @@ if (form && submitButton && formStatus) {
         }
     });
 
-    form.addEventListener('submit', (event) => {
-        event.preventDefault(); // This assignment has no backend.
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
         clearAllErrors();
 
         const errors = [
@@ -50,21 +50,60 @@ if (form && submitButton && formStatus) {
             ...validateFormats(form)
         ];
 
-        if (errors.length > 0) {
-            errors.forEach(({ field, message }) => {
-                field.classList.add('error');
-                field.setAttribute('aria-invalid', 'true');
-                const errorMessage = document.getElementById(`${field.id}-error`);
-                if (errorMessage) errorMessage.textContent = message;
+        function displayErrors(items) {
+            items.forEach(({ field, message }) => {
+                const element = typeof field === 'string'
+                    ? form.elements.namedItem(field) : field;
+                if (!element || !element.id) return;
+                element.classList.add('error');
+                element.setAttribute('aria-invalid', 'true');
+                const errorElement = document.getElementById(element.id + '-error');
+                if (errorElement) errorElement.textContent = message;
             });
+            const firstField = items.length > 0
+                ? (typeof items[0].field === 'string'
+                    ? form.elements.namedItem(items[0].field)
+                    : items[0].field)
+                : null;
+            if (firstField && typeof firstField.focus === 'function') firstField.focus();
+        }
 
-            formStatus.textContent = `Please correct ${errors.length} field${errors.length === 1 ? '' : 's'} and try again.`;
+        if (errors.length > 0) {
+            displayErrors(errors);
+            formStatus.textContent = 'Please correct ' + errors.length +
+                ' field' + (errors.length === 1 ? '' : 's') + ' and try again.';
             formStatus.className = 'error';
-            errors[0].field.focus();
             return;
         }
 
-        formStatus.textContent = 'Biodata validated successfully! This is a demo; no information was submitted or saved.';
-        formStatus.className = 'success';
+        submitButton.disabled = true;
+        formStatus.textContent = 'Saving biodata...';
+        formStatus.className = '';
+
+        try {
+            const response = await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.fromEntries(new FormData(form).entries()))
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                const issues = Array.isArray(result.errors) ? result.errors : [];
+                displayErrors(issues);
+                formStatus.textContent = result.message ||
+                    (issues.length ? issues[0].message : 'Unable to save biodata.');
+                formStatus.className = 'error';
+                return;
+            }
+
+            formStatus.textContent = 'Biodata saved successfully! Record #' + result.id + '.';
+            formStatus.className = 'success';
+        } catch (_error) {
+            formStatus.textContent = 'Unable to connect to the server. Start the app with npm start.';
+            formStatus.className = 'error';
+        } finally {
+            submitButton.disabled = false;
+        }
     });
 }
